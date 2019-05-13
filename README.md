@@ -1,0 +1,1 @@
+sqlite3 database exercise. Using Ruby to add methods for retrieving and updating a database. 
