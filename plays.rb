@@ -77,22 +77,61 @@ end
 class Playwright
 
   def self.all
-
+    table = PlayDBConnection.instance.execute("SELECT * FROM playwrights")
+    table.map {|datum| Playwright.new(datum)}
   end 
 
   def self.find_by_name(name)
-
+    PlayDBConnection.instance.execute(<<-SQL
+    SELECT
+      *
+    FROM 
+      playwrights
+    WHERE
+      name = name;
+    SQL
   end 
 
+  def initialize(options) 
+    @id = options['id']
+    @name = options['name']
+    @birth_year = options['birth_year']
+  end 
 
-# In addition, create a Playwright class and add the following methods to our ORM.
+  def create 
+    raise "#{self} already in database" if self.id 
+    PlayDBConnection.instance.execute(<<-SQL self.id, self.name, self.birth_year)
+      INSERT INTO 
+        playwrights (id, name, birth_year)
+      VALUES
+        (?, ?, ?);
+    SQL
+    self.id = PlayDBConnection.instance.last_insert_row_id
+  end 
 
-# Playwright::all
-# Playwright::find_by_name(name)
-# Playwright#new (this is the initialize method)
-# Playwright#create
-# Playwright#update
-# Playwright#get_plays (returns all plays written by playwright)
-# Remember, our PlayDBConnection class accesses the database stored 
-# in plays.db, which includes both the plays and playwrights tables.
+  def update 
+    raise "#{self} not in database" if self.id 
+    PlayDBConnection.instance.execute(<<-SQL self.id, self.name, self.birth_year)
+      UPDATE
+        playwrights
+      SET
+        name = ?, birth_year = ?
+      WHERE
+        id = ?;
+    SQL
+  end
+
+  def get_plays
+    PlayDBConnection.instance.execute(<<-SQL
+    SELECT
+      title
+    FROM 
+      plays
+    JOIN 
+      playwrights ON plays.playwright_id = playwrights.id
+    WHERE
+      playwrights.name = self.name;
+    SQL
+  end 
+end 
 
