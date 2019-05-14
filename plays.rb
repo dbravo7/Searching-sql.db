@@ -19,6 +19,30 @@ class Play
     data.map { |datum| Play.new(datum) }
   end
 
+  def self.find_by_title(title)
+    PlayDBConnection.instance.execute(<<-SQL
+      SELECT
+        *
+      FROM 
+        plays
+      WHERE
+        title = title;
+    SQL
+  end 
+
+  def self.find_by_playwright(name)
+    PlayDBConnection.instance.execute(<<-SQL
+      SELECT
+        title 
+      FROM 
+        plays
+      JOIN 
+        playwrights ON plays.playwright_id = playwrights.id
+      WHERE 
+        playwrights.name = name;
+    SQL
+  end 
+
   def initialize(options)
     @id = options['id']
     @title = options['title']
@@ -49,3 +73,26 @@ class Play
     SQL
   end
 end
+
+class Playwright
+
+  def self.all
+
+  end 
+
+  def self.find_by_name(name)
+
+  end 
+
+
+# In addition, create a Playwright class and add the following methods to our ORM.
+
+# Playwright::all
+# Playwright::find_by_name(name)
+# Playwright#new (this is the initialize method)
+# Playwright#create
+# Playwright#update
+# Playwright#get_plays (returns all plays written by playwright)
+# Remember, our PlayDBConnection class accesses the database stored 
+# in plays.db, which includes both the plays and playwrights tables.
+
